@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from model import Kmeans
 import numpy as np
 
+@asynccontextmanager
 def lifespan(app: FastAPI):
     """Crea una instancia del modelo Kmeans al iniciar la app."""
     global model
