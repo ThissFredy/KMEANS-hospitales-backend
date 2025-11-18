@@ -1,24 +1,17 @@
-# 1. Imagen base de Python
-# Usamos 'slim' para que sea una imagen ligera
+# 1. Imagen base
 FROM python:3.10-slim
 
-# 2. Establecer el directorio de trabajo dentro del contenedor
+# 2. Directorio de trabajo
 WORKDIR /app
 
 # 3. Instalar dependencias
-# Copiamos primero el 'requirements.txt' para aprovechar el caché de Docker
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 4. Copiar todo el proyecto
-# Copia las carpetas 'app/' y 'data/' al directorio /app
+# 4. Copiar el código (api.py, model.py, etc.)
 COPY . .
 
-# 5. Exponer el puerto
-# Informa a Docker que el contenedor escuchará en el puerto 5000
-EXPOSE 5000
-
-# 6. Comando de ejecución
-# El comando para iniciar la API cuando el contenedor arranque
-# '--host 0.0.0.0' es crucial para que sea accesible desde fuera del contenedor
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "5000"]
+# 5. Comando de ejecución CORREGIDO
+# A) Usamos "sh -c" para poder leer la variable de entorno $PORT de Render.
+# B) Cambiamos "main:app" por "api:app" porque tu archivo es api.py.
+CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}"]
