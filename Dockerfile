@@ -21,4 +21,4 @@ EXPOSE 5000
 # 6. Comando de ejecución
 # El comando para iniciar la API cuando el contenedor arranque
 # '--host 0.0.0.0' es crucial para que sea accesible desde fuera del contenedor
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
