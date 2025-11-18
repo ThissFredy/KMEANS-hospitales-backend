@@ -1,4 +1,3 @@
-# model.py
 import numpy as np
 
 class Kmeans():
@@ -89,3 +88,34 @@ class Kmeans():
             
         self.hospitals = np.array(new_hospitals)
         return self.hospitals
+
+    def calculate_metrics(self):
+        """
+        Calcula métricas de rendimiento del modelo actual.
+        Devuelve:
+            - average_distance: La distancia promedio de una casa a su hospital.
+            - inertia: La suma de errores cuadráticos.
+        """
+        if self.data is None or self.hospitals is None or self.clusters is None:
+            return {"average_distance": 0, "inertia": 0}
+        
+        total_distance = 0
+        total_squared_error = 0 # Inertia
+        
+        # Recorremos cada casa para ver qué tan lejos está de su hospital
+        for i, point in enumerate(self.data):
+            cluster_idx = self.clusters[i] # El ID del hospital asignado
+            centroid = self.hospitals[cluster_idx] # Las coordenadas de ese hospital
+            
+            # Usamos tu función existente para calcular la distancia
+            dist = self.euclidian_distance(point, centroid)
+            
+            total_distance += dist
+            total_squared_error += dist ** 2 # Inercia es distancia al cuadrado
+            
+        avg_distance = total_distance / self.n
+        
+        return {
+            "average_distance": round(avg_distance, 2),
+            "inertia": round(total_squared_error, 2)
+        }

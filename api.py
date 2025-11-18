@@ -1,4 +1,3 @@
-# api.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -14,13 +13,8 @@ def lifespan(app: FastAPI):
 # --- Configuración de la App ---
 app = FastAPI(
     title="K-Means API",
-    description="API para ejecutar el algoritmo K-Means paso a paso."
-)
-
-
-app = FastAPI(
-    title="API de Intención de Voto (k-NN Puro)",
-    description="API que entrena un modelo k-NN desde cero al iniciar.",
+    description="API para ejecutar el algoritmo K-Means paso a paso.",
+    version="1.0.0",
     lifespan=lifespan
 )
 
@@ -30,7 +24,7 @@ allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:3000",
-    "https://knn-votantes-frontend.onrender.com" # TODO: Cambiar al dominio real cuando esté desplegado
+    "https://kmeans-hospitales-frontend.onrender.com"
 ]
 
 app.add_middleware(
@@ -57,6 +51,10 @@ class ModelConfigA(BaseModel):
 
 # --- Endpoints de la API ---
 
+@app.get("/")
+async def root():
+    return {"message": "¡Bienvenido! La API está corriendo."}
+
 @app.post("/config/set-grid")
 def set_grid_size(config: ModelConfigM):
     """
@@ -74,6 +72,11 @@ def generate_data(config: ModelConfigN):
     Genera 'n' puntos de datos (casas) aleatorios.
     Devuelve la lista de coordenadas de las casas.
     """
+    global model
+
+    if config.n > model.m * model.m:
+        raise HTTPException(status_code=400, detail="El número de datos (n) no puede ser mayor que m*m.", message=f"m={model.m}")
+
     try:
         data = model.random_data_init(n=config.n)
         # Convertimos de numpy a lista para que sea compatible con JSON
@@ -135,18 +138,21 @@ def update_hospitals_step():
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/state")
-def get_current_state():
-    """Endpoint útil para que el frontend obtenga el estado actual completo."""
-    if model.data is None:
-        return {"state": False}
-        
-    return {
-        "state": True,
-        "m": model.m,
-        "n": model.n,
-        "A": model.A,
-        "data": model.data.tolist() if model.data is not None else None,
-        "hospitals": model.hospitals.tolist() if model.hospitals is not None else None,
-        "clusters": model.clusters.tolist() if model.clusters is not None else None
-    }
+class ModelMetrics(BaseModel):
+    average_distance: float = Field(..., description="Distancia promedio de las casas a sus hospitales")
+    inertia: float = Field(..., description="Inercia del modelo")
+
+@app.get("/run/metrics", response_model=ModelMetrics)
+def get_current_metrics():
+    """Devuelve las métricas actuales del modelo."""
+    metrics = model.calculate_metrics()
+    return metrics
+
+
+class ModelStatus(BaseModel):
+    status: bool = Field(..., description="Estado del Backend")
+
+@app.get("/status", response_model=ModelStatus)
+def get_status():
+    """Devuelve el estado actual del Backend."""
+    return {"status": True}
