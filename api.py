@@ -6,7 +6,7 @@ from model import Kmeans
 import numpy as np
 
 @asynccontextmanager
-def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):
     """Crea una instancia del modelo Kmeans al iniciar la app."""
     global model
     model = Kmeans(m=10)

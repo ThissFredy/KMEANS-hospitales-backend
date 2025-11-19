@@ -14,4 +14,4 @@ COPY . .
 # 5. Comando de ejecución CORREGIDO
 # A) Usamos "sh -c" para poder leer la variable de entorno $PORT de Render.
 # B) Cambiamos "main:app" por "api:app" porque tu archivo es api.py.
-CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT:-5000}"]
